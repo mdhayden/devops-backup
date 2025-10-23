@@ -10,23 +10,23 @@
 
 ---
 
-## 🔧 **Live Demo Step-by-Step**
+## 🔧 **Live Demo Flow**
 
-### **Step 1: Show Everything Works** (30 seconds)
+### **Show Everything Works** (30 seconds)
 ```bash
 # In terminal, run:
 python -m pytest tests/ -v --tb=no
 ```
-**Say:** *"First, let me show you our current system - all 20 tests are passing."*
+**Say:** *"First, let me show you our current system - all tests are passing."*
 
 ---
 
-### **Step 2: Break Something Live** (60 seconds)
+### **Break Something Live** (60 seconds)
 
 **In VS Code, open `tests/test_basic.py`:**
-1. Find line 56: `assert 2 * 3 == 6`
-2. **Live edit:** Change it to `assert 2 * 3 == 999`
-3. Save the file (Ctrl+S)
+- Find line 56: `assert 2 * 3 == 6`
+- **Live edit:** Change it to `assert 2 * 3 == 999`
+- Save the file (Ctrl+S)
 
 **In terminal:**
 ```bash
@@ -37,11 +37,11 @@ python -m pytest tests/test_basic.py::test_basic_math -v
 
 ---
 
-### **Step 3: Fix It Live** (30 seconds)
+### **Fix It Live** (30 seconds)
 
 **In VS Code:**
-1. Change line 56 back: `assert 2 * 3 == 6`
-2. Save the file (Ctrl+S)
+- Change line 56 back: `assert 2 * 3 == 6`
+- Save the file (Ctrl+S)
 
 **In terminal:**
 ```bash
@@ -52,7 +52,7 @@ python -m pytest tests/test_basic.py::test_basic_math -v
 
 ---
 
-### **Step 4: Add New Feature Live** (90 seconds)
+### **Add New Feature Live** (90 seconds)
 
 **Create new file `roi_calculator.py`:**
 ```python
@@ -93,7 +93,7 @@ python -m pytest tests/test_basic.py::test_new_roi_feature -v
 
 ---
 
-### **Step 5: Security Demo** (60 seconds)
+### **Security Demo** (60 seconds)
 
 **Create `security_demo.py`:**
 ```python
@@ -118,7 +118,7 @@ bandit security_demo.py -f txt
 
 ---
 
-### **Step 6: Show All Tests Still Pass** (30 seconds)
+### **Show All Tests Still Pass** (30 seconds)
 
 **In terminal:**
 ```bash
@@ -129,7 +129,7 @@ python -m pytest tests/ -v --tb=no
 
 ---
 
-## 🗣️ **What to Say During Each Step**
+## 🗣️ **What to Say During Each Demo**
 
 ### **Opening:**
 > "I'm going to show you live changes to demonstrate how our CI/CD pipeline works in real-time. This isn't just slides - it's a working system."
@@ -176,9 +176,9 @@ python -m pytest tests/ --tb=no -q
 
 ## 🔧 **Files You'll Edit Live:**
 
-1. **`tests/test_basic.py`** - Line 45 for break/fix demo
-2. **`roi_calculator.py`** - New file for feature demo
-3. **`security_demo.py`** - New file for security demo
+- **`tests/test_basic.py`** - Line 56 for break/fix demo
+- **`roi_calculator.py`** - New file for feature demo  
+- **`security_demo.py`** - New file for security demo
 
 ---
 
@@ -211,11 +211,11 @@ bandit -r . -x ./tests/ -f txt --severity-level high
 
 ## 🎬 **Presentation Flow:**
 
-1. **"Let me show you this pipeline working live"**
-2. **Break something** → Pipeline catches it
-3. **Fix it** → Pipeline validates fix  
-4. **Add feature** → Tests ensure it works
-5. **Show security** → Scanner prevents vulnerabilities
-6. **"This is enterprise DevOps in action!"**
+- **"Let me show you this pipeline working live"**
+- **Break something** → Pipeline catches it
+- **Fix it** → Pipeline validates fix  
+- **Add feature** → Tests ensure it works
+- **Show security** → Scanner prevents vulnerabilities
+- **"This is enterprise DevOps in action!"**
 
 Your manual changes will prove the CI/CD pipeline is **real, working, and production-ready**! 🚀
