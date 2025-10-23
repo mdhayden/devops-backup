@@ -30,9 +30,15 @@ class DevOpsDemo:
         print("-" * 40)
         
         try:
+            # Safer command execution with list instead of shell=True
+            if isinstance(command, str):
+                command_list = command.split()
+            else:
+                command_list = command
+                
             result = subprocess.run(
-                command,
-                shell=True,
+                command_list,
+                shell=False,
                 capture_output=True,
                 text=True,
                 timeout=30

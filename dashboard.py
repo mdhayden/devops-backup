@@ -6,6 +6,7 @@ Real-time monitoring and performance analytics
 import pandas as pd
 import json
 import os
+import subprocess
 import time
 from datetime import datetime, timedelta
 from pytz import timezone
@@ -288,7 +289,11 @@ class TradingBotDashboard:
         print("🔄 Starting live monitoring... (Press Ctrl+C to stop)")
         try:
             while True:
-                os.system('cls' if os.name == 'nt' else 'clear')  # Clear screen
+                # Secure alternative to os.system
+                if os.name == 'nt':
+                    subprocess.run(['cls'], shell=False, check=False)
+                else:
+                    subprocess.run(['clear'], shell=False, check=False)
                 self.print_dashboard()
                 print(f"🔄 Refreshing in {refresh_seconds} seconds...")
                 time.sleep(refresh_seconds)

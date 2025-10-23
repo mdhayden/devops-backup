@@ -46,7 +46,7 @@ function Invoke-DemoCommand {
     
     Write-Info $Description
     Write-Command $Command
-    Write-Host "$('-' * 40)"
+    Write-Host ("-" * 40)
     
     try {
         $job = Start-Job -ScriptBlock {
@@ -166,7 +166,7 @@ function Demo-Docker {
     # Show Dockerfile content
     if (Test-Path "Dockerfile") {
         Write-Info "Dockerfile contents:"
-        Write-Host "$('-' * 40)"
+        Write-Host ("-" * 40)
         Get-Content "Dockerfile" | Write-Host
     }
     
@@ -192,7 +192,7 @@ function Demo-Kubernetes {
     # Show Kubernetes manifest
     if (Test-Path "k8s\deployment.yaml") {
         Write-Info "Kubernetes deployment manifest:"
-        Write-Host "$('-' * 40)"
+        Write-Host ("-" * 40)
         Get-Content "k8s\deployment.yaml" | Write-Host
         
         # Validate manifest
@@ -209,7 +209,7 @@ function Demo-Terraform {
     # Show Terraform configuration
     if (Test-Path "terraform\main.tf") {
         Write-Info "Terraform configuration:"
-        Write-Host "$('-' * 40)"
+        Write-Host ("-" * 40)
         Get-Content "terraform\main.tf" | Select-Object -First 30 | Write-Host
         
         # Navigate to terraform directory and run commands
@@ -232,13 +232,13 @@ function Demo-Monitoring {
     # Show monitoring configurations
     if (Test-Path "monitoring\prometheus.yml") {
         Write-Info "Prometheus configuration:"
-        Write-Host "$('-' * 40)"
+        Write-Host ("-" * 40)
         Get-Content "monitoring\prometheus.yml" | Write-Host
     }
     
     if (Test-Path "docker-compose.yml") {
         Write-Info "Docker Compose monitoring stack:"
-        Write-Host "$('-' * 40)"
+        Write-Host ("-" * 40)
         Get-Content "docker-compose.yml" | Write-Host
     }
 }
@@ -250,7 +250,7 @@ function Demo-CICD {
     # Azure Pipelines
     if (Test-Path "azure-pipelines.yml") {
         Write-Info "Azure DevOps Pipeline:"
-        Write-Host "$('-' * 40)"
+        Write-Host ("-" * 40)
         Get-Content "azure-pipelines.yml" | Select-Object -First 50 | ForEach-Object { Write-Host "$($_.ReadCount): $_" }
         
         $totalLines = (Get-Content "azure-pipelines.yml").Count
@@ -262,7 +262,7 @@ function Demo-CICD {
     # GitHub Actions
     if (Test-Path ".github\workflows\ci-cd.yml") {
         Write-Info "GitHub Actions Workflow:"
-        Write-Host "$('-' * 40)"
+        Write-Host ("-" * 40)
         Get-Content ".github\workflows\ci-cd.yml" | Select-Object -First 30 | ForEach-Object { Write-Host "$($_.ReadCount): $_" }
         
         $totalLines = (Get-Content ".github\workflows\ci-cd.yml").Count
@@ -285,7 +285,7 @@ function Demo-TradingBot {
     if (Test-Path "test_bot.py") {
         Write-Info "Running test bot for 15 seconds (demonstration mode)"
         Write-Command "python test_bot.py"
-        Write-Host "$('-' * 40)"
+        Write-Host ("-" * 40)
         
         try {
             $job = Start-Job -ScriptBlock {

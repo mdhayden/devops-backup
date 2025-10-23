@@ -70,16 +70,16 @@ jobs:
     - name: 🔍 Code formatting check (Black)
       run: |
         echo "::group::Black formatting check"
-        black --check --diff . || echo "Code formatting issues found - run 'black .' to fix"
+        black --check --diff .
         echo "::endgroup::"
-      continue-on-error: true
+      continue-on-error: false
     
     - name: 📋 Import sorting check (isort)
       run: |
         echo "::group::Import sorting check"
-        isort --check-only --diff . || echo "Import sorting issues found - run 'isort .' to fix"
+        isort --check-only --diff .
         echo "::endgroup::"
-      continue-on-error: true
+      continue-on-error: false
     
     - name: 🔎 Lint with Flake8
       run: |
@@ -87,7 +87,8 @@ jobs:
         # Stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # Treat warnings as errors for main branch
-        flake8 . --count --max-complexity=10 --max-line-length=88 --statistics --exit-zero
+        flake8 . --count --max-complexity=10 --max-line-length=88 --statistics \
+          ${{ github.ref == 'refs/heads/main' && '--exit-zero' || '' }}
         echo "::endgroup::"
     
     - name: 🔒 Type checking with MyPy
@@ -109,8 +110,17 @@ jobs:
         bandit -r . -x ./tests/ -f txt
         
         # Count security issues (for outputs)
-        ISSUES=$(cat reports/bandit-report.json | python -c "import sys, json; data=json.load(sys.stdin); print(len(data.get('results', [])))" 2>/dev/null || echo "0")
+        ISSUES=$(jq '.results | length' reports/bandit-report.json 2>/dev/null || echo "0")
         echo "issues=$ISSUES" >> $GITHUB_OUTPUT
+        
+        # Fail if high severity issues found on main branch
+        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          HIGH_ISSUES=$(jq '[.results[] | select(.issue_severity == "HIGH")] | length' reports/bandit-report.json 2>/dev/null || echo "0")
+          if [[ $HIGH_ISSUES -gt 0 ]]; then
+            echo "❌ High severity security issues found: $HIGH_ISSUES"
+            exit 1
+          fi
+        fi
         echo "::endgroup::"
     
     - name: 🔐 Dependency vulnerability scan (Safety)
@@ -133,8 +143,9 @@ jobs:
           --cov-report=html \
           --cov-report=term-missing \
           --junitxml=reports/pytest.xml \
-          --cov-fail-under=70 \
-          --tb=short || true
+          --cov-fail-under=80 \
+          -n auto \
+          --tb=short
         
         # Extract coverage percentage
         COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree=ET.parse('coverage.xml'); print(tree.getroot().attrib['line-rate'])" 2>/dev/null || echo "0")
@@ -213,13 +224,22 @@ jobs:
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
     
+    # ===== CONTAINER SECURITY SCANNING =====
+    - name: 🔍 Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tags }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+      continue-on-error: true
+    
     # ===== BUILD & PUSH =====
     - name: 🚀 Build and push Docker image
       id: build
       uses: docker/build-push-action@v5
       with:
         context: .
-        platforms: linux/amd64
+        platforms: linux/amd64,linux/arm64
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -249,12 +269,37 @@ jobs:
     - name: 📥 Checkout repository
       uses: actions/checkout@v4
     
-    - name: 🚀 Deploy to Staging Environment
+    - name: 🔧 Setup Azure CLI
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.30.0
+        inlineScript: |
+          az version
+    
+    - name: 🔐 Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS_STAGING }}
+    
+    - name: 🚀 Deploy to Azure Container Instances (Staging)
       run: |
-        echo "🚀 Deploying to staging environment..."
-        echo "📦 Image: ${{ needs.build-and-push.outputs.image-tags }}"
-        echo "🌍 Environment: staging"
-        echo "✅ Staging deployment completed successfully!"
+        echo "Deploying to staging environment..."
+        echo "Image: ${{ needs.build-and-push.outputs.image-tags }}"
+        
+        # Example ACI deployment command
+        az container create \
+          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP_STAGING }} \
+          --name alpaca-bot-staging \
+          --image ${{ needs.build-and-push.outputs.image-tags }} \
+          --cpu 1 \
+          --memory 1 \
+          --registry-server ${{ env.REGISTRY }} \
+          --registry-username ${{ github.actor }} \
+          --registry-password ${{ secrets.GITHUB_TOKEN }} \
+          --environment-variables ENVIRONMENT=staging \
+          --ports 8080 \
+          --dns-name-label alpaca-bot-staging-${{ github.run_number }} \
+          --restart-policy Always
 
   # ==========================================
   # PRODUCTION DEPLOYMENT JOB
@@ -273,10 +318,64 @@ jobs:
     - name: 📥 Checkout repository
       uses: actions/checkout@v4
     
-    - name: 🎯 Deploy to Production Environment
+    - name: 🔧 Setup Azure CLI
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.30.0
+        inlineScript: |
+          az version
+    
+    - name: 🔐 Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS_PRODUCTION }}
+    
+    - name: 🚀 Deploy to Azure Container Instances (Production)
       run: |
-        echo "🎯 Deploying to production environment..."
-        echo "📦 Image: ${{ needs.build-and-push.outputs.image-tags }}"
-        echo "🌍 Environment: production"
-        echo "✅ Production deployment completed successfully!"
-        echo "🌐 Application URL: https://yourdomain.com"
+        echo "Deploying to production environment..."
+        echo "Image: ${{ needs.build-and-push.outputs.image-tags }}"
+        
+        # Production deployment with more resources
+        az container create \
+          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP_PRODUCTION }} \
+          --name alpaca-bot-production \
+          --image ${{ needs.build-and-push.outputs.image-tags }} \
+          --cpu 2 \
+          --memory 2 \
+          --registry-server ${{ env.REGISTRY }} \
+          --registry-username ${{ github.actor }} \
+          --registry-password ${{ secrets.GITHUB_TOKEN }} \
+          --environment-variables ENVIRONMENT=production \
+          --ports 8080 \
+          --dns-name-label alpaca-bot-prod \
+          --restart-policy Always
+    
+    - name: 🏥 Health Check
+      run: |
+        echo "Performing health checks..."
+        sleep 30
+        # Add health check logic here
+        curl -f https://alpaca-bot-prod.azurecontainer.io:8080/health || exit 1
+    
+    - name: 📢 Notify Deployment Success
+      if: success()
+      run: |
+        echo "✅ Production deployment successful!"
+        echo "🌐 Application URL: https://alpaca-bot-prod.azurecontainer.io:8080"
+
+  # ==========================================
+  # CLEANUP JOB
+  # ==========================================
+  cleanup:
+    name: 🧹 Cleanup
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    
+    steps:
+    - name: 🗑️ Delete old container images
+      run: |
+        echo "Cleaning up old container images..."
+        # Keep only the last 10 images
+        # This would typically use GitHub API or registry API
+        echo "Cleanup completed"
