@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Web Server for Alpaca ROC Trading Bot Dashboard
-Designed for Cloud Run deployment
+Designed for Cloud Run deployment with authentication
 """
 import json
 import os
@@ -11,7 +11,9 @@ from pytz import timezone
 import pandas as pd
 import alpaca_trade_api as alpaca
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from urllib.parse import parse_qs, urlparse
 import logging
+from auth_system import auth_system
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -22,22 +24,81 @@ ORDERS_CSV_FILE = 'Orders.csv'
 UNNAMED_COLUMN = 'Unnamed: 0'
 
 class DashboardHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        if self.path == '/' or self.path == '/dashboard':
-            self.send_response(200)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            html = self.generate_dashboard_html()
-            self.wfile.write(html.encode('utf-8'))
+    def get_session_id(self):
+        """Extract session ID from cookies"""
+        cookies = self.headers.get('Cookie', '')
+        for cookie in cookies.split(';'):
+            if 'session_id=' in cookie:
+                return cookie.split('session_id=')[1].strip()
+        return None
+    
+    def set_session_cookie(self, session_id):
+        """Set session cookie"""
+        self.send_header('Set-Cookie', f'session_id={session_id}; Path=/; HttpOnly; Max-Age=1800')
+    
+    def require_auth(self):
+        """Check if user is authenticated"""
+        session_id = self.get_session_id()
+        username = auth_system.validate_session(session_id)
+        return username is not None, username
+    
+    def send_login_page(self, error=False):
+        """Send login form"""
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
         
-        elif self.path == '/health':
-            # Health check endpoint for Cloud Run
+        with open('login_form.html', 'r', encoding='utf-8') as f:
+            html = f.read()
+        
+        if error:
+            html = html.replace('style="display: none"', 'style="display: block"', 1)
+        
+        self.wfile.write(html.encode('utf-8'))
+    
+    def do_GET(self):
+        parsed_path = urlparse(self.path)
+        path = parsed_path.path
+        
+        # Public endpoints (no auth required)
+        if path == '/health':
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
             self.end_headers()
             self.wfile.write(b'OK')
+            return
         
-        elif self.path == '/api/status':
+        elif path == '/login':
+            self.send_login_page()
+            return
+        
+        elif path == '/logout':
+            session_id = self.get_session_id()
+            if session_id:
+                auth_system.logout(session_id)
+            
+            self.send_response(302)
+            self.send_header('Location', '/login')
+            self.send_header('Set-Cookie', 'session_id=; Path=/; HttpOnly; Max-Age=0')
+            self.end_headers()
+            return
+        
+        # Protected endpoints (auth required)
+        is_authenticated, username = self.require_auth()
+        if not is_authenticated:
+            self.send_response(302)
+            self.send_header('Location', '/login')
+            self.end_headers()
+            return
+        
+        if path == '/' or path == '/dashboard':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            html = self.generate_dashboard_html(username)
+            self.wfile.write(html.encode('utf-8'))
+        
+        elif path == '/api/status':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
@@ -49,6 +110,36 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
             self.wfile.write(b'404 Not Found')
+    
+    def do_POST(self):
+        if self.path == '/login':
+            # Parse form data
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length).decode('utf-8')
+            form_data = parse_qs(post_data)
+            
+            username = form_data.get('username', [''])[0]
+            password = form_data.get('password', [''])[0]
+            
+            # Authenticate
+            if auth_system.authenticate(username, password):
+                # Create session
+                session_id = auth_system.create_session(username)
+                
+                # Redirect to dashboard with session cookie
+                self.send_response(302)
+                self.send_header('Location', '/dashboard')
+                self.set_session_cookie(session_id)
+                self.end_headers()
+                
+                logger.info(f"User {username} logged in successfully")
+            else:
+                # Show login form with error
+                self.send_login_page(error=True)
+                logger.warning(f"Failed login attempt for username: {username}")
+        else:
+            self.send_response(404)
+            self.end_headers()
     
     def get_bot_status_json(self):
         """Get bot status as JSON for API endpoint"""
@@ -203,7 +294,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 pass
         return trading_history
 
-    def generate_dashboard_html(self):
+    def generate_dashboard_html(self, username=None):
         """Generate the main dashboard HTML"""
         # Load all data
         data = self.load_dashboard_data()
@@ -229,7 +320,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             
             return self.generate_main_html_template(
                 current_time, clock, account, positions, 
-                bot_mode, first_trade_made, ticker_data, trading_history
+                bot_mode, first_trade_made, ticker_data, trading_history, username
             )
         except Exception as e:
             logger.error(f"Error generating dashboard: {e}")
@@ -278,15 +369,18 @@ class DashboardHandler(BaseHTTPRequestHandler):
         </html>
         """
 
-    def generate_main_html_template(self, current_time, clock, account, positions, bot_mode, first_trade_made, ticker_data, trading_history):
+    def generate_main_html_template(self, current_time, clock, account, positions, bot_mode, first_trade_made, ticker_data, trading_history, username=None):
         """Generate the main HTML template"""
         market_status_emoji = "🟢" if clock.is_open else "🔴"
         market_status_text = "OPEN" if clock.is_open else "CLOSED"
         market_status_class = "status-open" if clock.is_open else "status-closed"
         
+        # User display
+        user_display = f"👤 {username}" if username else "👤 User"
+        
         return f"""
         <!DOCTYPE html>
-        <html>
+        <html lang="en">
         <head>
             <title>🤖 Alpaca ROC Trading Bot - Live Dashboard</title>
             <meta charset="UTF-8">
@@ -316,6 +410,32 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     background: rgba(255, 255, 255, 0.1);
                     backdrop-filter: blur(10px);
                     border-radius: 15px;
+                    position: relative;
+                }}
+                .logout-btn {{
+                    position: absolute;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(248, 113, 113, 0.8);
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    text-decoration: none;
+                    font-size: 14px;
+                    transition: all 0.3s ease;
+                }}
+                .logout-btn:hover {{
+                    background: rgba(248, 113, 113, 1);
+                    transform: translateY(-1px);
+                }}
+                .user-info {{
+                    position: absolute;
+                    top: 20px;
+                    left: 20px;
+                    color: #ffd700;
+                    font-weight: bold;
                 }}
                 .status-banner {{
                     background: rgba(255, 255, 255, 0.15);
@@ -411,6 +531,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
         <body>
             <div class="container">
                 <div class="header">
+                    <div class="user-info">{user_display}</div>
+                    <a href="/logout" class="logout-btn">🚪 Logout</a>
                     <h1>🤖 Alpaca ROC Trading Bot Dashboard</h1>
                     <p><span class="working-indicator"></span>Last Updated: {current_time.strftime('%Y-%m-%d %H:%M:%S ET')}</p>
                     <p>🌐 Running on Cloud Run</p>
