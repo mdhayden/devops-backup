@@ -246,7 +246,6 @@ class DashboardHandler(BaseHTTPRequestHandler):
             account = data['account']
             clock = data['clock']
             positions = data['positions']
-            current_time = data['current_time']
             tickers = data['tickers']
             
             # Get additional data
@@ -258,7 +257,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             bot_mode = '1-minute analysis' if first_trade_made else '30-minute analysis (first trade)'
             
             return self.generate_main_html_template(
-                current_time, clock, account, positions, 
+                clock, account, positions, 
                 bot_mode, first_trade_made, ticker_data, trading_history
             )
         except Exception as e:
@@ -308,7 +307,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         </html>
         """
 
-    def generate_main_html_template(self, current_time, clock, account, positions, bot_mode, first_trade_made, ticker_data, trading_history):
+    def generate_main_html_template(self, clock, account, positions, bot_mode, first_trade_made, ticker_data, trading_history):
         """Generate the main HTML template"""
         market_status_emoji = "🟢" if clock.is_open else "🔴"
         market_status_text = "OPEN" if clock.is_open else "CLOSED"
@@ -442,13 +441,12 @@ class DashboardHandler(BaseHTTPRequestHandler):
             <div class="container">
                 <div class="header">
                     <h1>What is this app?</h1>
-                    <p><span class="working-indicator"></span>Last Updated: {current_time.strftime('%Y-%m-%d %H:%M:%S ET')}</p>
-                    <p>🌐 Auto-deployed via DevOps Pipeline | 📅 Deployed: {current_time.strftime('%B %d, %Y at %I:%M %p')}</p>
+                    <p><span class="working-indicator"></span>DevOps Pipeline Status: ACTIVE</p>
+                    <p>🌐 Auto-deployed via GitHub → Cloud Build → Cloud Run</p>
                 </div>
                 
                 <div style="background: linear-gradient(45deg, #FF6B6B, #4ECDC4); padding: 15px; margin: 20px 0; border-radius: 10px; color: white; text-align: center; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-                    ⚡ DEMO UPDATED: {current_time.strftime('%H:%M:%S')} - Changes deployed instantly! ⚡
-                    <br><small>🏷️ Version: v{current_time.strftime('%Y%m%d-%H%M%S')}</small>
+                    🚀 DEMO MESSAGE: Change this text for live demo! 🚀
                 </div>
                 
                 <div class="status-banner">
