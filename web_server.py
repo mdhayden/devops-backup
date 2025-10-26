@@ -280,6 +280,10 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
     def generate_main_html_template(self, current_time, clock, account, positions, bot_mode, first_trade_made, ticker_data, trading_history):
         """Generate the main HTML template"""
+        market_status_emoji = "🟢" if clock.is_open else "🔴"
+        market_status_text = "OPEN" if clock.is_open else "CLOSED"
+        market_status_class = "status-open" if clock.is_open else "status-closed"
+        
         return f"""
         <!DOCTYPE html>
         <html>
@@ -287,6 +291,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             <title>🤖 Alpaca ROC Trading Bot - Live Dashboard</title>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta http-equiv="refresh" content="60">
             <style>
                 * {{
                     margin: 0;
@@ -311,6 +316,15 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     background: rgba(255, 255, 255, 0.1);
                     backdrop-filter: blur(10px);
                     border-radius: 15px;
+                }}
+                .status-banner {{
+                    background: rgba(255, 255, 255, 0.15);
+                    padding: 15px;
+                    border-radius: 10px;
+                    margin-bottom: 20px;
+                    text-align: center;
+                    font-size: 1.2em;
+                    font-weight: bold;
                 }}
                 .status-bar {{
                     display: grid;
@@ -378,20 +392,39 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     margin-top: 20px;
                     opacity: 0.7;
                 }}
+                .working-indicator {{
+                    display: inline-block;
+                    width: 12px;
+                    height: 12px;
+                    background: #4ade80;
+                    border-radius: 50%;
+                    animation: pulse 2s infinite;
+                    margin-right: 8px;
+                }}
+                @keyframes pulse {{
+                    0% {{ opacity: 1; transform: scale(1); }}
+                    50% {{ opacity: 0.7; transform: scale(1.1); }}
+                    100% {{ opacity: 1; transform: scale(1); }}
+                }}
             </style>
         </head>
         <body>
             <div class="container">
                 <div class="header">
                     <h1>🤖 Alpaca ROC Trading Bot Dashboard</h1>
-                    <p>Last Updated: {current_time.strftime('%Y-%m-%d %H:%M:%S ET')}</p>
+                    <p><span class="working-indicator"></span>Last Updated: {current_time.strftime('%Y-%m-%d %H:%M:%S ET')}</p>
                     <p>🌐 Running on Cloud Run</p>
+                </div>
+                
+                <div class="status-banner">
+                    {market_status_emoji} Market is {market_status_text}
+                    {' - Next open: ' + str(clock.next_open)[:16] if not clock.is_open else ''}
                 </div>
                 
                 <div class="status-bar">
                     <div class="status-item">
-                        <div class="status-value {'status-open' if clock.is_open else 'status-closed'}">
-                            {'🟢 OPEN' if clock.is_open else '🔴 CLOSED'}
+                        <div class="status-value {market_status_class}">
+                            {market_status_emoji} {market_status_text}
                         </div>
                         <div>Market Status</div>
                     </div>
@@ -427,6 +460,10 @@ class DashboardHandler(BaseHTTPRequestHandler):
                                 {'❌ Yes' if account.pattern_day_trader else '✅ No'}
                             </span>
                         </div>
+                        <div class="metric">
+                            <span>Connection:</span>
+                            <span class="positive">✅ Connected</span>
+                        </div>
                     </div>
                     
                     <!-- Account Details -->
@@ -444,6 +481,10 @@ class DashboardHandler(BaseHTTPRequestHandler):
                             <span>Day Trades:</span>
                             <span>{account.daytrade_count}/3</span>
                         </div>
+                        <div class="metric">
+                            <span>Account Type:</span>
+                            <span>Paper Trading</span>
+                        </div>
                     </div>
                 </div>
                 
@@ -459,8 +500,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 {self.generate_history_html(trading_history)}
                 
                 <div class="refresh-info">
-                    <p>🔄 Refresh page to update data</p>
+                    <p>🔄 Page auto-refreshes every 60 seconds</p>
                     <p>📊 <a href="/api/status" style="color: #ffd700;">View Raw JSON Data</a></p>
+                    <p>🏥 <a href="/health" style="color: #ffd700;">Health Check</a></p>
                 </div>
             </div>
         </body>
