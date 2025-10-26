@@ -35,4 +35,4 @@ COPY . .
 EXPOSE 8080
 
 # Default command to run
-CMD ["python", "dashboard.py"]
+CMD ["python", "startup.py"]
