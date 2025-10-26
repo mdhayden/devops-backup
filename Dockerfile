@@ -1,31 +1,38 @@
-FROM python:3.10-slim-bullseye
+# Use a full Python base that includes headers
+FROM python:3.11-bullseye
 
 WORKDIR /app
 
-# Install dependencies required to build aiohttp, pandas, etc.
+# Install everything required to build aiohttp and pandas
 RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    make \
+    build-essential \
+    python3-dev \
+    python3-setuptools \
+    python3-wheel \
     libffi-dev \
     libssl-dev \
-    python3-dev \
     libxml2-dev \
     libxslt1-dev \
     libpq-dev \
+    gcc \
+    g++ \
+    make \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install
+# Upgrade pip and copy dependencies
 COPY requirements.txt .
 RUN pip install --upgrade pip setuptools wheel
+
+# Install dependencies (use prebuilt aiohttp wheel)
+RUN pip install --no-cache-dir aiohttp==3.9.5
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy everything else
+# Copy the app source
 COPY . .
 
 # Expose port 8080 for Cloud Run
 EXPOSE 8080
 
-# Run the dashboard
+# Default command to run
 CMD ["python", "localhost_dashboard.py"]
