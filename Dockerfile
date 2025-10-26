@@ -1,20 +1,24 @@
-# ✅ Multi-stage Docker build for Alpaca Trading Bot
-
 # ---------- Stage 1: Builder ----------
 FROM python:3.11-slim AS builder
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies for building Python packages (fixes aiohttp build)
+# Install all system dependencies (C and Rust toolchain for aiohttp)
 RUN apt-get update && apt-get install -y \
+    build-essential \
     gcc \
     g++ \
     libffi-dev \
     libssl-dev \
     python3-dev \
-    cargo \
+    curl \
+    && curl https://sh.rustup.rs -sSf | sh -s -- -y \
+    && . "$HOME/.cargo/env" \
     && rm -rf /var/lib/apt/lists/*
+
+# Ensure Rust and Cargo are on PATH
+ENV PATH="/root/.cargo/bin:$PATH"
 
 # Copy only the clean production requirements.txt
 COPY ./requirements.txt /app/requirements.txt
@@ -54,7 +58,7 @@ RUN mkdir -p tick_data
 # Expose port for dashboard
 EXPOSE 8080
 
-# Health check
+# Health check for Cloud Run
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8080/api/status')" || exit 1
 
