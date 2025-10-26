@@ -1,0 +1,13 @@
+# Exclude development and cache files from Cloud Build context
+.git/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.md
+requirements-dev.txt
+tests/
+test_*
+.ipynb_checkpoints/
+.DS_Store
