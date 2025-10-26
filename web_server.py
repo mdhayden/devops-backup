@@ -33,9 +33,21 @@ class DashboardHandler(BaseHTTPRequestHandler):
         elif self.path == '/health':
             # Health check endpoint for Cloud Run
             self.send_response(200)
-            self.send_header('Content-type', 'text/plain')
+            self.send_header('Content-type', 'text/html')
             self.end_headers()
-            self.wfile.write(b'OK')
+            health_html = '''
+            <html><head><title>Health Check</title></head>
+            <body style="font-family: Arial; text-align: center; padding: 30px; background: #2ecc71; color: white;">
+                <h1>✅ LIVE DevOps Demo - System Healthy!</h1>
+                <p>Deployment Pipeline: <strong>ACTIVE</strong></p>
+                <p>Auto-scaling: <strong>ENABLED</strong></p>
+                <p>Time: <strong>{}</strong></p>
+                <div style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 5px;">
+                    <small>This page proves the DevOps pipeline deployed successfully!</small>
+                </div>
+            </body></html>
+            '''.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC'))
+            self.wfile.write(health_html.encode('utf-8'))
         
         elif self.path == '/api/status':
             self.send_response(200)
@@ -47,8 +59,21 @@ class DashboardHandler(BaseHTTPRequestHandler):
         
         else:
             self.send_response(404)
+            self.send_header('Content-type', 'text/html')
             self.end_headers()
-            self.wfile.write(b'404 Not Found')
+            error_html = '''
+            <html><head><title>🚀 LIVE DevOps Demo</title></head>
+            <body style="font-family: Arial; text-align: center; padding: 50px; background: linear-gradient(45deg, #FF6B6B, #4ECDC4); color: white;">
+                <h1>🚀 LIVE DevOps DEMO!</h1>
+                <h2>Page Not Found - But The Pipeline Works!</h2>
+                <p>Try: <a href="/" style="color: yellow;">Dashboard Home</a> | <a href="/health" style="color: yellow;">Health Check</a></p>
+                <div style="margin-top: 30px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                    <h3>🎯 This change was deployed automatically via:</h3>
+                    <p>GitHub → Cloud Build → Container Registry → Cloud Run</p>
+                </div>
+            </body></html>
+            '''
+            self.wfile.write(error_html.encode('utf-8'))
     
     def get_bot_status_json(self):
         """Get bot status as JSON for API endpoint"""
