@@ -634,3 +634,10 @@ def start_dashboard_server(port=8080):
 
 if __name__ == "__main__":
     start_dashboard_server()
+
+if __name__ == "__main__":
+    from http.server import HTTPServer
+    server_address = ("", 8080)
+    httpd = HTTPServer(server_address, DashboardHandler)
+    print("🚀 Dashboard server started on port 8080")
+    httpd.serve_forever()
