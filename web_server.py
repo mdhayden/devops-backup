@@ -67,7 +67,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self.send_header('Content-type', CONTENT_TYPE_HTML)
             self.end_headers()
             error_html = '''
-            <html><head><title>🚀 LIVE DevOps Demo</title></head>
+            <html><head><title>🚀 jkkjdfdhasdja DBU suck</title></head>
             <body style="font-family: Arial; text-align: center; padding: 50px; background: linear-gradient(45deg, #FF6B6B, #4ECDC4); color: white;">
                 <h1>🚀 LIVE DevOps DEMO!</h1>
                 <h2>Page Not Found - But The Pipeline Works!</h2>
@@ -441,13 +441,14 @@ class DashboardHandler(BaseHTTPRequestHandler):
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🚀 LIVE DevOps Demo - Trading Dashboard</h1>
+                    <h1>🔥 LIVE DEMO IN ACTION! 🔥</h1>
                     <p><span class="working-indicator"></span>Last Updated: {current_time.strftime('%Y-%m-%d %H:%M:%S ET')}</p>
-                    <p>🌐 Auto-deployed via DevOps Pipeline</p>
+                    <p>🌐 Auto-deployed via DevOps Pipeline | 📅 Deployed: {current_time.strftime('%B %d, %Y at %I:%M %p')}</p>
                 </div>
                 
                 <div style="background: linear-gradient(45deg, #FF6B6B, #4ECDC4); padding: 15px; margin: 20px 0; border-radius: 10px; color: white; text-align: center; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-                    🎯 LIVE DevOps Demo in Progress! Changes deployed automatically via GitHub → Cloud Build → Cloud Run
+                    ⚡ DEMO UPDATED: {current_time.strftime('%H:%M:%S')} - Changes deployed instantly! ⚡
+                    <br><small>🏷️ Version: v{current_time.strftime('%Y%m%d-%H%M%S')}</small>
                 </div>
                 
                 <div class="status-banner">
