@@ -291,7 +291,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         </head>
         <body>
             <div class="error-container">
-                <h1>🤖 Alpaca ROC Trading Bot</h1>
+                <h1>🤖 MSITM asdedsadfca a</h1>
                 <h2>❌ {title}</h2>
                 <p>{message}</p>
                 <p><small>Check logs for more details</small></p>
@@ -313,7 +313,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         <!DOCTYPE html>
         <html lang="en">
         <head>
-            <title>🤖 Alpaca ROC Trading Bot - Live Dashboard</title>
+            <title>🚀 LIVE DevOps Demo - Trading Bot Dashboard</title>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <meta http-equiv="refresh" content="60">
@@ -325,7 +325,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 }}
                 body {{
                     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
                     color: white;
                     min-height: 100vh;
                     padding: 20px;
@@ -436,9 +436,13 @@ class DashboardHandler(BaseHTTPRequestHandler):
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🤖 Alpaca ROC Trading Bot Dashboard</h1>
+                    <h1>🚀 LIVE DevOps Demo - Trading Dashboard</h1>
                     <p><span class="working-indicator"></span>Last Updated: {current_time.strftime('%Y-%m-%d %H:%M:%S ET')}</p>
-                    <p>🌐 Running on Cloud Run</p>
+                    <p>🌐 Auto-deployed via DevOps Pipeline</p>
+                </div>
+                
+                <div style="background: linear-gradient(45deg, #FF6B6B, #4ECDC4); padding: 15px; margin: 20px 0; border-radius: 10px; color: white; text-align: center; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    🎯 LIVE DevOps Demo in Progress! Changes deployed automatically via GitHub → Cloud Build → Cloud Run
                 </div>
                 
                 <div class="status-banner">
