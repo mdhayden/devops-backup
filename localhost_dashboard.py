@@ -610,34 +610,24 @@ class DashboardHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         """Suppress default logging"""
         pass
-
 def start_dashboard_server(port=8080):
-    """Start the dashboard web server"""
+    """Start the dashboard web server (headless-safe for Cloud Run)"""
     server_address = ('', port)
     httpd = HTTPServer(server_address, DashboardHandler)
     
-    print("🌐 Starting Alpaca Trading Bot Dashboard Server...")
-    print(f"📍 Server running at: http://localhost:{port}")
-    print("🚀 Opening dashboard in browser...")
-    print("🔄 Dashboard auto-refreshes every 15 seconds")
-    print("⚠️  Press Ctrl+C to stop the server")
-    print("-" * 50)
-    
-    # Open browser
-    webbrowser.open(f'http://localhost:{port}')
+    print(f"🚀 Alpaca Trading Bot Dashboard running on port {port}")
+    print("✅ Ready to accept HTTP traffic")
     
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("\n👋 Dashboard server stopped")
+        print("\n🛑 Shutting down dashboard server...")
         httpd.shutdown()
 
+
 if __name__ == "__main__":
-    from http.server import HTTPServer
-    import os
-    PORT = int(os.environ.get("PORT", 8080))
-    server_address = ("", PORT)
-    httpd = HTTPServer(server_address, DashboardHandler)
-    print(f"🚀 Dashboard server running on port {PORT}")
-    httpd.serve_forever()
+    port = int(os.environ.get("PORT", 8080))
+    print(f"🌐 Starting server on 0.0.0.0:{port}")
+    start_dashboard_server(port)
+
 
