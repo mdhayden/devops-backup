@@ -1,38 +1,38 @@
-# Use a full Python base that includes headers
-FROM python:3.11-bullseye
+# Use Python 3.11 slim image for faster builds
+FROM python:3.11-slim
 
+# Set working directory
 WORKDIR /app
 
-# Install everything required to build aiohttp and pandas
+# Install system dependencies required for pandas and other packages
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    python3-dev \
-    python3-setuptools \
-    python3-wheel \
-    libffi-dev \
-    libssl-dev \
-    libxml2-dev \
-    libxslt1-dev \
-    libpq-dev \
     gcc \
     g++ \
-    make \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip and copy dependencies
+# Copy requirements first for better caching
 COPY requirements.txt .
-RUN pip install --upgrade pip setuptools wheel
 
-# Install dependencies (use prebuilt aiohttp wheel)
-RUN pip install --no-cache-dir aiohttp==3.9.5
+# Upgrade pip and install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the app source
+# Copy application code
 COPY . .
 
-# Expose port 8080 for Cloud Run
+# Create directories that might be needed
+RUN mkdir -p AUTH TICKERS tick_data
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PORT=8080
+
+# Expose port
 EXPOSE 8080
 
-# Default command to run
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD python healthcheck.py
+
+# Run the application
 CMD ["python", "startup.py"]
