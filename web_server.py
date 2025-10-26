@@ -291,7 +291,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         </head>
         <body>
             <div class="error-container">
-                <h1>🤖 Alpaca ROC Trading Bot</h1>
+                <h1>🤖 MSITM Live Demo xfsdfasefd </h1>
                 <h2>❌ {title}</h2>
                 <p>{message}</p>
                 <p><small>Check logs for more details</small></p>
