@@ -4,6 +4,7 @@ FROM python:3.11-bullseye AS builder
 WORKDIR /app
 
 # Install full build toolchain and headers for aiohttp
+RUN pip install "aiohttp==3.9.5"
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
