@@ -10,8 +10,9 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python dependencies
+# Copy only the clean production requirements.txt
 COPY ./requirements.txt /app/requirements.txt
+
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir --user -r requirements.txt
 
