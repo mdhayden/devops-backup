@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Web Server for Alpaca ROC Trading Bot Dashboard
+Web Server for LIVE DevOps Demo Dashboard
 Designed for Cloud Run deployment
 """
 import json
@@ -479,7 +479,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 <div class="dashboard-grid">
                     <!-- Bot Status -->
                     <div class="card">
-                        <h3>🤖 Bot Status</h3>
+                        <h3>🔥 Live System Status</h3>
                         <div class="metric">
                             <span>Mode:</span>
                             <span>{bot_mode}</span>
@@ -592,7 +592,7 @@ def start_dashboard_server(port=8080):
     server_address = ('', port)
     httpd = HTTPServer(server_address, DashboardHandler)
     
-    logger.info(f"🚀 Alpaca Trading Bot Dashboard starting on port {port}")
+    logger.info(f"🚀 LIVE DevOps Demo Dashboard starting on port {port}")
     logger.info("✅ Ready to accept HTTP traffic")
     
     try:
