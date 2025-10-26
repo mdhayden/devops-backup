@@ -296,7 +296,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         </head>
         <body>
             <div class="error-container">
-                <h1>🚀 MSITM dsadad cacacasdasd</h1>
+                <h1>🚀 MSITM dsadad cacacasdasd</h1>https://devops-backup-956422402300.europe-west1.run.app/
                 <h2>❌ {title}</h2>
                 <p>{message}</p>
                 <p><small>Check logs for more details</small></p>
@@ -441,7 +441,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🔥 LIVE DEMO IN ACTION! 🔥</h1>
+                    <h1>What is this app?</h1>
                     <p><span class="working-indicator"></span>Last Updated: {current_time.strftime('%Y-%m-%d %H:%M:%S ET')}</p>
                     <p>🌐 Auto-deployed via DevOps Pipeline | 📅 Deployed: {current_time.strftime('%B %d, %Y at %I:%M %p')}</p>
                 </div>
