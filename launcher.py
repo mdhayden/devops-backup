@@ -52,7 +52,7 @@ def main():
         elif choice == '2':
             print("\n🚀 Launching Web Dashboard...")
             try:
-                subprocess.run([sys.executable, 'web_dashboard.py'], check=True)
+                subprocess.run([sys.executable, 'dashboard.py'], check=True)
                 print("✅ Web dashboard created! Check your browser.")
                 input("Press Enter to continue...")
             except subprocess.CalledProcessError:
