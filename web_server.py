@@ -296,7 +296,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         </head>
         <body>
             <div class="error-container">
-                <h1>🚀 DevOps Demo - Trading Bot</h1>
+                <h1>🚀 MSITM dsadad cacacasdasd</h1>
                 <h2>❌ {title}</h2>
                 <p>{message}</p>
                 <p><small>Check logs for more details</small></p>
