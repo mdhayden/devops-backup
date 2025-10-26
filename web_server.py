@@ -20,12 +20,17 @@ logger = logging.getLogger(__name__)
 # Constants
 ORDERS_CSV_FILE = 'Orders.csv'
 UNNAMED_COLUMN = 'Unnamed: 0'
+AUTH_FILE = 'AUTH/auth.txt'
+TICKERS_FILE = 'TICKERS/my_tickers.txt'
+CONTENT_TYPE_HTML = 'text/html'
+CONTENT_TYPE_JSON = 'application/json'
+DEMO_GRADIENT = 'linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%)'
 
 class DashboardHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/' or self.path == '/dashboard':
             self.send_response(200)
-            self.send_header('Content-type', 'text/html')
+            self.send_header('Content-type', CONTENT_TYPE_HTML)
             self.end_headers()
             html = self.generate_dashboard_html()
             self.wfile.write(html.encode('utf-8'))
@@ -33,7 +38,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         elif self.path == '/health':
             # Health check endpoint for Cloud Run
             self.send_response(200)
-            self.send_header('Content-type', 'text/html')
+            self.send_header('Content-type', CONTENT_TYPE_HTML)
             self.end_headers()
             health_html = '''
             <html><head><title>Health Check</title></head>
@@ -51,7 +56,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         
         elif self.path == '/api/status':
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
+            self.send_header('Content-type', CONTENT_TYPE_JSON)
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             status_data = self.get_bot_status_json()
@@ -59,7 +64,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         
         else:
             self.send_response(404)
-            self.send_header('Content-type', 'text/html')
+            self.send_header('Content-type', CONTENT_TYPE_HTML)
             self.end_headers()
             error_html = '''
             <html><head><title>🚀 LIVE DevOps Demo</title></head>
@@ -79,15 +84,15 @@ class DashboardHandler(BaseHTTPRequestHandler):
         """Get bot status as JSON for API endpoint"""
         try:
             # Check if configuration files exist
-            if not os.path.exists('AUTH/auth.txt') or not os.path.exists('TICKERS/my_tickers.txt'):
+            if not os.path.exists(AUTH_FILE) or not os.path.exists(TICKERS_FILE):
                 return json.dumps({
                     'error': 'Configuration files not found',
                     'status': 'Configuration Error',
-                    'message': 'AUTH/auth.txt or TICKERS/my_tickers.txt not found'
+                    'message': f'{AUTH_FILE} or {TICKERS_FILE} not found'
                 })
             
             # Load configuration
-            key = json.loads(open('AUTH/auth.txt', 'r').read())
+            key = json.loads(open(AUTH_FILE, 'r').read())
             api = alpaca.REST(
                 key['APCA-API-KEY-ID'], 
                 key['APCA-API-SECRET-KEY'], 
@@ -100,7 +105,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             clock = api.get_clock()
             positions = api.list_positions()
             
-            with open('TICKERS/my_tickers.txt', 'r') as f:
+            with open(TICKERS_FILE, 'r') as f:
                 tickers = f.read().upper().split()
             
             # Get ticker prices (limit to first 3 for performance)
@@ -163,11 +168,11 @@ class DashboardHandler(BaseHTTPRequestHandler):
         """Load all data needed for dashboard"""
         try:
             # Check if configuration files exist
-            if not os.path.exists('AUTH/auth.txt') or not os.path.exists('TICKERS/my_tickers.txt'):
+            if not os.path.exists(AUTH_FILE) or not os.path.exists(TICKERS_FILE):
                 return None
             
             # Load configuration
-            key = json.loads(open('AUTH/auth.txt', 'r').read())
+            key = json.loads(open(AUTH_FILE, 'r').read())
             api = alpaca.REST(
                 key['APCA-API-KEY-ID'], 
                 key['APCA-API-SECRET-KEY'], 
@@ -182,7 +187,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             et_tz = timezone('America/New_York')
             current_time = datetime.now(et_tz)
             
-            with open('TICKERS/my_tickers.txt', 'r') as f:
+            with open(TICKERS_FILE, 'r') as f:
                 tickers = f.read().upper().split()
             
             return {
@@ -234,7 +239,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         data = self.load_dashboard_data()
         if not data:
             return self.generate_error_html("Configuration Error", 
-                                           "Unable to load configuration. Please check AUTH/auth.txt and TICKERS/my_tickers.txt files.")
+                                           f"Unable to load configuration. Please check {AUTH_FILE} and {TICKERS_FILE} files.")
         
         try:
             # Extract data
@@ -266,12 +271,12 @@ class DashboardHandler(BaseHTTPRequestHandler):
         <!DOCTYPE html>
         <html>
         <head>
-            <title>{title} - Alpaca Trading Bot</title>
+            <title>{title} - DevOps Demo</title>
             <meta charset="UTF-8">
             <style>
                 body {{
                     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
                     color: white;
                     min-height: 100vh;
                     padding: 20px;
@@ -291,11 +296,11 @@ class DashboardHandler(BaseHTTPRequestHandler):
         </head>
         <body>
             <div class="error-container">
-                <h1>🤖 MSITM asdedsadfca a</h1>
+                <h1>🚀 DevOps Demo - Trading Bot</h1>
                 <h2>❌ {title}</h2>
                 <p>{message}</p>
                 <p><small>Check logs for more details</small></p>
-                <button onclick="location.reload()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                <button onclick="location.reload()" style="background: #FF6B6B; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
                     🔄 Retry
                 </button>
             </div>
@@ -313,7 +318,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         <!DOCTYPE html>
         <html lang="en">
         <head>
-            <title>🚀 LIVE DevOps Demo - Trading Bot Dashboard</title>
+            <title>🚀 LIVE DevOps Demo - Trading Dashboard</title>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <meta http-equiv="refresh" content="60">
