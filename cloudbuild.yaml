@@ -13,7 +13,7 @@ steps:
       - 'push'
       - 'gcr.io/$PROJECT_ID/devops-backup:latest'
     
-  # Deploy container image to Cloud Run
+  # Deploy container image to Cloud Run with specific service account
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -33,6 +33,7 @@ steps:
       - '--max-instances=10'
       - '--min-instances=0'
       - '--timeout=300'
+      - '--service-account=1002595611169-compute@developer.gserviceaccount.com'
 
 # Store images in Google Container Registry
 images:
