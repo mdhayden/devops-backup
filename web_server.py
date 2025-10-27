@@ -440,7 +440,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>Live Trading Dashboard</h1>
+                    <h1>Ldasdadda dasdadsadsdas dasdasdd</h1>
                     <p><span class="working-indicator"></span>DevOps Pipeline Status: ACTIVE</p>
                     <p>🌐 Auto-deployed via GitHub → Cloud Build → Cloud Run</p>
                 </div>
