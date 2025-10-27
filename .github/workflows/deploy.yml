@@ -1,10 +1,10 @@
-name: Auto Deploy with Approval Control
+name: Auto Deploy with Manual Approval
 
 on:
   push:
     branches: [ main ]
-  pull_request_review:
-    types: [submitted]
+  pull_request:
+    types: [closed]
 
 env:
   PROJECT_ID: gen-lang-client-0502058841
@@ -12,14 +12,14 @@ env:
   REGION: europe-west1
 
 jobs:
-  # Auto Deploy: Mario's pushes deploy immediately, others need approval
+  # Deploy: Only when PR is merged or direct push by owner
   deploy:
     runs-on: ubuntu-latest
     if: |
       (github.event_name == 'push' && github.actor == 'MarioH88') ||
-      (github.event_name == 'pull_request_review' && 
-       github.event.review.state == 'approved' && 
-       github.event.review.user.login == 'MarioH88')
+      (github.event_name == 'pull_request' && 
+       github.event.pull_request.merged == true &&
+       github.event.pull_request.base.ref == 'main')
     
     permissions:
       contents: read
@@ -29,9 +29,12 @@ jobs:
       - name: Deployment Authorization
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
-            echo "🚀 AUTO-DEPLOY: Direct push by @MarioH88"
+            echo "🚀 DIRECT PUSH DEPLOY: Emergency push by @MarioH88"
+            echo "⚠️  Consider using PR workflow for better tracking"
           else
-            echo "✅ APPROVED DEPLOY: PR approved by @MarioH88"
+            echo "✅ PR MERGE DEPLOY: Approved and merged"
+            echo "PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
+            echo "Merged by: ${{ github.actor }}"
           fi
           echo "Deploying to production..."
 
