@@ -4,17 +4,10 @@ steps:
     args:
       - 'build'
       - '-t'
-      - 'gcr.io/$PROJECT_ID/devops-backup:$COMMIT_SHA'
-      - '-t'
       - 'gcr.io/$PROJECT_ID/devops-backup:latest'
       - '.'
     
   # Push the container image to Container Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'push'
-      - 'gcr.io/$PROJECT_ID/devops-backup:$COMMIT_SHA'
-      
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
@@ -28,7 +21,7 @@ steps:
       - 'deploy'
       - 'devops-backup'
       - '--image'
-      - 'gcr.io/$PROJECT_ID/devops-backup:$COMMIT_SHA'
+      - 'gcr.io/$PROJECT_ID/devops-backup:latest'
       - '--region'
       - 'europe-west1'
       - '--platform'
@@ -43,7 +36,6 @@ steps:
 
 # Store images in Google Container Registry
 images:
-  - 'gcr.io/$PROJECT_ID/devops-backup:$COMMIT_SHA'
   - 'gcr.io/$PROJECT_ID/devops-backup:latest'
 
 # Specify longer timeout for build

@@ -1,6 +1,8 @@
-name: Deploy to Cloud Run (Require Mario Approval)
+name: Deploy to Cloud Run (Auto-Deploy)
 
 on:
+  push:
+    branches: [ main ]
   pull_request_review:
     types: [submitted]
 
@@ -11,7 +13,8 @@ env:
 
 jobs:
   deploy:
-    if: github.event.review.state == 'approved' && github.event.review.user.login == 'MarioH88'
+    # Deploy on direct push to main OR when Mario approves a PR
+    if: github.event_name == 'push' || (github.event.review.state == 'approved' && github.event.review.user.login == 'MarioH88')
     permissions:
       contents: read
       id-token: write
