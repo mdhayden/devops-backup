@@ -13,15 +13,20 @@ jobs:
   # Deploy when MarioH88 merges PR or pushes directly to main
   deploy:
     runs-on: ubuntu-latest
-    if: |
-      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.merged_by.login == 'MarioH88') ||
-      (github.event_name == 'push' && github.actor == 'MarioH88')
+    # Remove the if condition temporarily to test if GitHub Actions runs at all
     
     permissions:
       contents: read
       id-token: write
 
     steps:
+      - name: Debug Info
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref }}"
+          
       - name: Deploy Info
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
