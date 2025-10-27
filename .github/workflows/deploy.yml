@@ -25,9 +25,9 @@ jobs:
       - name: Deploy Info
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
-            echo "🚀 AUTO-DEPLOY: Direct push by @MarioH88"
+            echo "AUTO-DEPLOY: Direct push by @MarioH88"
           else
-            echo "✅ AUTO-DEPLOY: PR approved and merged by @MarioH88"
+            echo "AUTO-DEPLOY: PR approved and merged by @MarioH88"
             echo "PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
             echo "Author: @${{ github.event.pull_request.user.login }}"
           fi
@@ -51,6 +51,6 @@ jobs:
 
       - name: Deployment Success
         run: |
-          echo "✅ DEPLOYMENT COMPLETED"
-          echo "🌐 URL: https://devops-backup-1002595611169.europe-west1.run.app"
+          echo "DEPLOYMENT COMPLETED"
+          echo "URL: https://devops-backup-1002595611169.europe-west1.run.app"
           echo "Your app is now updated!"
