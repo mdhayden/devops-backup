@@ -1,51 +1,19 @@
-name: Branch Protectionname: Branch Protectionname: Branch Protection
-
-
+name: Branch Protection
 
 on:
-
   push:
+    branches: [ main ]
 
-    branches: [ main ]on:# Simple security: Block unauthorized direct pushes, allow PRs
-
-
-
-jobs:  push:on:
-
-  protect-main:
-
-    runs-on: ubuntu-latest    branches: [ main ]  push:
-
+jobs:
+  # Block non-owners from direct pushes
+  branch-protection:
+    runs-on: ubuntu-latest
     if: github.actor != 'MarioH88'
-
-    steps:    branches: [ main ]
-
-      - name: Block Unauthorized Push
-
-        run: |jobs:
-
-          echo "🚨 Access Denied: Only @MarioH88 can push to main"
-
-          echo "Please create a Pull Request instead"  # Block non-owners from direct pushesjobs:
-
-          exit 1
-  protect-main:  # Only block direct pushes from non-owners
-
-    runs-on: ubuntu-latest  branch-protection:
-
-    if: github.actor != 'MarioH88'    runs-on: ubuntu-latest
-
-    steps:    if: github.actor != 'MarioH88'
-
-      - name: Block Unauthorized Push    steps:
-
-        run: |      - name: Block Unauthorized Direct Push
-
-          echo "🚨 Access Denied: Only @MarioH88 can push to main"        run: |
-
-          echo "Please create a Pull Request instead"          echo "🚨 BLOCKED: Direct push to main not allowed"
-
-          exit 1          echo "User: ${{ github.actor }}"
+    steps:
+      - name: Block Unauthorized Direct Push
+        run: |
+          echo "🚨 BLOCKED: Direct push to main not allowed"
+          echo "User: ${{ github.actor }}"
           echo ""
           echo "📋 Please use Pull Request workflow:"
           echo "1. Create a feature branch"
