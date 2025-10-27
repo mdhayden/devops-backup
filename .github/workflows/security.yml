@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  # Block non-owners from direct pushes
+  # Block non-owners from direct pushes to main
   branch-protection:
     runs-on: ubuntu-latest
     if: github.actor != 'MarioH88'
@@ -16,8 +16,10 @@ jobs:
           echo "User: ${{ github.actor }}"
           echo ""
           echo "📋 Please use Pull Request workflow:"
-          echo "1. Create a feature branch"
-          echo "2. Submit a Pull Request"
-          echo "3. Wait for @MarioH88 approval"
-          echo "4. Auto-deploy after approval"
+          echo "1. Create a feature branch: git checkout -b feature/your-feature"
+          echo "2. Submit a Pull Request to main branch"
+          echo "3. Wait for @MarioH88 approval and merge"
+          echo "4. Auto-deploy happens after approval"
+          echo ""
+          echo "ℹ️ Only @MarioH88 can push directly to main"
           exit 1

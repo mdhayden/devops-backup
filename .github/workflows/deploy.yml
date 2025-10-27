@@ -1,8 +1,6 @@
-name: Auto Deploy with Cloud Build
+name: Auto Deploy After PR Approval
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
     types: [closed]
 
@@ -10,27 +8,25 @@ env:
   PROJECT_ID: gen-lang-client-0502058841
 
 jobs:
-  # Deploy when MarioH88 pushes directly or when PR is merged
+  # Deploy only when PR is merged by MarioH88 (approved and merged)
   deploy:
     runs-on: ubuntu-latest
     if: |
-      (github.event_name == 'push' && github.actor == 'MarioH88') ||
-      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.merged_by.login == 'MarioH88'
     
     permissions:
       contents: read
       id-token: write
 
     steps:
-      - name: Deployment Info
+      - name: PR Approval Deploy Info
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            echo "🚀 AUTO-DEPLOY: Direct push by @MarioH88"
-          else
-            echo "✅ AUTO-DEPLOY: PR approved and merged"
-            echo "PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
-          fi
-          echo "Using Cloud Build for deployment..."
+          echo "✅ AUTO-DEPLOY: PR approved and merged by @MarioH88"
+          echo "PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
+          echo "Author: @${{ github.event.pull_request.user.login }}"
+          echo "Merged by: @${{ github.event.pull_request.merged_by.login }}"
+          echo "Deploying approved changes..."
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,4 +47,4 @@ jobs:
       - name: Deployment Success
         run: |
           echo "✅ DEPLOYMENT COMPLETED via Cloud Build"
-          echo "Your app should be updated shortly!"
+          echo "PR #${{ github.event.pull_request.number }} deployed successfully!"
