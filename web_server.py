@@ -440,13 +440,13 @@ class DashboardHandler(BaseHTTPRequestHandler):
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>What is this app?</h1>
+                    <h1>MSITM DBU Live< sadsdas/h1>
                     <p><span class="working-indicator"></span>DevOps Pipeline Status: ACTIVE</p>
                     <p>🌐 Auto-deployed via GitHub → Cloud Build → Cloud Run</p>
                 </div>
                 
                 <div style="background: linear-gradient(45deg, #FF6B6B, #4ECDC4); padding: 15px; margin: 20px 0; border-radius: 10px; color: white; text-align: center; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-                    🚀 DEMO MESSAGE: Testing automatic deployment! 🚀
+                    🚀 DEMO MESSAGE: Ready for live demo! 🚀
                 </div>
                 
                 <div class="status-banner">
@@ -456,7 +456,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 
                 <div class="status-bar">
                     <div class="status-item">
-                        <div class="status-value {market_status_class}">
+                        <div class="status-vyeue {market_status_class}">
                             {market_status_emoji} {market_status_text}
                         </div>
                         <div>Market Status</div>
