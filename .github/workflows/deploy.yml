@@ -1,4 +1,4 @@
-name: Auto Deploy After Approval
+name: Auto Deploy with Cloud Build
 
 on:
   push:
@@ -8,8 +8,6 @@ on:
 
 env:
   PROJECT_ID: gen-lang-client-0502058841
-  SERVICE: devops-backup
-  REGION: europe-west1
 
 jobs:
   # Deploy when MarioH88 pushes directly or when PR is merged
@@ -32,7 +30,7 @@ jobs:
             echo "✅ AUTO-DEPLOY: PR approved and merged"
             echo "PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
           fi
-          echo "Deploying to production..."
+          echo "Using Cloud Build for deployment..."
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,25 +41,14 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Configure Docker
-        run: gcloud auth configure-docker
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
 
-      - name: Build and Push Container
-        run: |-
-          docker build -t "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}" ./
-          docker push "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}"
-
-      - name: Deploy to Cloud Run
-        id: deploy
-        uses: google-github-actions/deploy-cloudrun@v1
-        with:
-          service: ${{ env.SERVICE }}
-          region: ${{ env.REGION }}
-          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}
-          flags: '--allow-unauthenticated --port=8080 --memory=1Gi --cpu=1 --max-instances=10 --min-instances=0'
+      - name: Deploy with Cloud Build
+        run: |
+          gcloud builds submit --config=cloudbuild.yaml --project=${{ env.PROJECT_ID }}
 
       - name: Deployment Success
         run: |
-          echo "✅ DEPLOYMENT COMPLETED"
-          echo "URL: ${{ steps.deploy.outputs.url }}"
-          echo "Deployed successfully!"
+          echo "✅ DEPLOYMENT COMPLETED via Cloud Build"
+          echo "Your app should be updated shortly!"
