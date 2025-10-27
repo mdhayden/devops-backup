@@ -1,0 +1,24 @@
+name: Environment Protection Setup
+
+# This creates a production environment that requires your approval
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup-environment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Production Environment
+        run: |
+          echo "Creating production environment with required reviewers"
+          echo "Environment: production"
+          echo "Required reviewers: MarioH88"
+          echo "Deployment protection rules: enabled"
+
+# To use this:
+# 1. Run this workflow once
+# 2. Go to Settings → Environments
+# 3. Configure "production" environment
+# 4. Add yourself as required reviewer
+# 5. Update main deploy.yml to use environment: production

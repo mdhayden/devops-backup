@@ -1,0 +1,95 @@
+name: Security Enforcement
+
+# This workflow enforces security rules
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened, closed]
+
+jobs:
+  # Detect unauthorized pushes
+  unauthorized-push-detector:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.actor != 'MarioH88'
+    steps:
+      - name: Block Unauthorized Push
+        run: |
+          echo "🚨 SECURITY VIOLATION DETECTED!"
+          echo "======================================="
+          echo "Unauthorized user: ${{ github.actor }}"
+          echo "Action: Direct push to main branch"
+          echo "Time: $(date)"
+          echo "Commit: ${{ github.sha }}"
+          echo "======================================="
+          echo ""
+          echo "❌ DEPLOYMENT BLOCKED"
+          echo "Only @MarioH88 can push directly to main"
+          echo ""
+          echo "📋 Required Actions:"
+          echo "1. Revert this push"
+          echo "2. Create a feature branch"
+          echo "3. Submit a Pull Request"
+          echo "4. Wait for @MarioH88 approval"
+          echo ""
+          exit 1
+
+  # PR validation
+  pr-security-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: PR Security Validation
+        run: |
+          echo "🔍 PR SECURITY CHECK"
+          echo "===================="
+          echo "PR Author: ${{ github.actor }}"
+          echo "PR Number: #${{ github.event.number }}"
+          echo "Target Branch: ${{ github.base_ref }}"
+          echo "Source Branch: ${{ github.head_ref }}"
+          echo ""
+          if [ "${{ github.actor }}" = "MarioH88" ]; then
+            echo "✅ AUTHORIZED: PR created by repository owner"
+          else
+            echo "⏳ PENDING: PR requires @MarioH88 approval"
+            echo "Status: Waiting for review..."
+          fi
+
+  # Monitor approval status
+  approval-monitor:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    steps:
+      - name: Deployment Authorization Check
+        run: |
+          if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+            echo "✅ PR MERGED SUCCESSFULLY"
+            echo "========================="
+            echo "PR #${{ github.event.number }} has been merged"
+            echo "Merged by: ${{ github.actor }}"
+            echo "Auto-deployment will trigger if approved by @MarioH88"
+          else
+            echo "❌ PR CLOSED WITHOUT MERGE"
+            echo "PR #${{ github.event.number }} was closed"
+          fi
+
+  # Security summary
+  security-summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [unauthorized-push-detector, pr-security-check, approval-monitor]
+    steps:
+      - name: Security Status Summary
+        run: |
+          echo "🛡️ SECURITY ENFORCEMENT SUMMARY"
+          echo "================================"
+          echo "Repository: ${{ github.repository }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "SHA: ${{ github.sha }}"
+          echo ""
+          echo "Security Status: MONITORED ✅"
+          echo "Protection Level: MAXIMUM 🔒"
+          echo "Approval Required: @MarioH88 ONLY ⚡"

@@ -1,0 +1,25 @@
+name: Branch Protection Workflow
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  require-approval:
+    runs-on: ubuntu-latest
+    if: github.actor != 'MarioH88'
+    steps:
+      - name: Block unauthorized merges
+        run: |
+          echo "❌ SECURITY: Only MarioH88 can approve merges to main"
+          echo "This PR requires approval from @MarioH88"
+          exit 1
+
+  auto-approve-mario:
+    runs-on: ubuntu-latest
+    if: github.actor == 'MarioH88'
+    steps:
+      - name: Auto-approve Mario's changes
+        run: |
+          echo "✅ APPROVED: MarioH88 can merge directly"

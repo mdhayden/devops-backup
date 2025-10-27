@@ -1,7 +1,9 @@
-name: Deploy to Cloud Run (Auto-Deploy)
+name: Deploy to Cloud Run (Approval Required)
 
 on:
   push:
+    branches: [ main ]
+  pull_request:
     branches: [ main ]
   pull_request_review:
     types: [submitted]
@@ -12,15 +14,65 @@ env:
   REGION: europe-west1
 
 jobs:
+  # Security Gate: Block unauthorized users
+  security-check:
+    runs-on: ubuntu-latest
+    if: github.actor != 'MarioH88'
+    steps:
+      - name: Security Gate - Unauthorized User
+        run: |
+          echo "🚨 SECURITY ALERT: Unauthorized deployment attempt"
+          echo "User: ${{ github.actor }}"
+          echo "Only @MarioH88 can deploy to production"
+          echo "Please create a Pull Request for review"
+          exit 1
+
+  # Approval Gate: Require Mario's approval for PRs
+  approval-gate:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'pull_request_review' && 
+       github.event.review.user.login != 'MarioH88')
+    steps:
+      - name: Require Mario's Approval
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "⏳ WAITING: Pull Request requires @MarioH88 approval"
+            echo "PR #${{ github.event.number }} needs review"
+            exit 1
+          elif [ "${{ github.event.review.user.login }}" != "MarioH88" ]; then
+            echo "❌ INVALID APPROVER: Only @MarioH88 can approve"
+            echo "Reviewer: ${{ github.event.review.user.login }}"
+            exit 1
+          fi
+
+  # Production Deployment: Only for approved changes
   deploy:
-    # Deploy on direct push to main OR when Mario approves a PR
-    if: github.event_name == 'push' || (github.event.review.state == 'approved' && github.event.review.user.login == 'MarioH88')
+    runs-on: ubuntu-latest
+    needs: []  # Remove dependencies to allow Mario's direct pushes
+    environment: production  # Requires environment protection
+    if: |
+      (github.event_name == 'push' && github.actor == 'MarioH88') ||
+      (github.event_name == 'pull_request_review' && 
+       github.event.review.state == 'approved' && 
+       github.event.review.user.login == 'MarioH88')
+    
     permissions:
       contents: read
       id-token: write
 
-    runs-on: ubuntu-latest
     steps:
+      - name: Security Validation
+        run: |
+          echo "🔐 SECURITY CHECK PASSED"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "✅ AUTHORIZED: Direct push by @MarioH88"
+          else
+            echo "✅ APPROVED: PR approved by @MarioH88"
+          fi
+          echo "Deploying to production..."
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -47,5 +99,9 @@ jobs:
           image: gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}
           flags: '--allow-unauthenticated --port=8080 --memory=1Gi --cpu=1 --max-instances=10 --min-instances=0'
 
-      - name: Show Output
-        run: echo ${{ steps.deploy.outputs.url }}
+      - name: Deployment Success
+        run: |
+          echo "🚀 DEPLOYMENT SUCCESSFUL"
+          echo "URL: ${{ steps.deploy.outputs.url }}"
+          echo "Deployed by: ${{ github.actor }}"
+          echo "Commit: ${{ github.sha }}"
