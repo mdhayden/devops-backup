@@ -1,9 +1,7 @@
-name: Deploy to Cloud Run (Approval Required)
+name: Auto Deploy with Approval Control
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
     branches: [ main ]
   pull_request_review:
     types: [submitted]
@@ -14,44 +12,9 @@ env:
   REGION: europe-west1
 
 jobs:
-  # Security Gate: Block unauthorized users
-  security-check:
-    runs-on: ubuntu-latest
-    if: github.actor != 'MarioH88'
-    steps:
-      - name: Security Gate - Unauthorized User
-        run: |
-          echo "🚨 SECURITY ALERT: Unauthorized deployment attempt"
-          echo "User: ${{ github.actor }}"
-          echo "Only @MarioH88 can deploy to production"
-          echo "Please create a Pull Request for review"
-          exit 1
-
-  # Approval Gate: Require Mario's approval for PRs
-  approval-gate:
-    runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'pull_request_review' && 
-       github.event.review.user.login != 'MarioH88')
-    steps:
-      - name: Require Mario's Approval
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "⏳ WAITING: Pull Request requires @MarioH88 approval"
-            echo "PR #${{ github.event.number }} needs review"
-            exit 1
-          elif [ "${{ github.event.review.user.login }}" != "MarioH88" ]; then
-            echo "❌ INVALID APPROVER: Only @MarioH88 can approve"
-            echo "Reviewer: ${{ github.event.review.user.login }}"
-            exit 1
-          fi
-
-  # Production Deployment: Only for approved changes
+  # Auto Deploy: Mario's pushes deploy immediately, others need approval
   deploy:
     runs-on: ubuntu-latest
-    needs: []  # Remove dependencies to allow Mario's direct pushes
-    environment: production  # Requires environment protection
     if: |
       (github.event_name == 'push' && github.actor == 'MarioH88') ||
       (github.event_name == 'pull_request_review' && 
@@ -63,13 +26,12 @@ jobs:
       id-token: write
 
     steps:
-      - name: Security Validation
+      - name: Deployment Authorization
         run: |
-          echo "🔐 SECURITY CHECK PASSED"
           if [ "${{ github.event_name }}" = "push" ]; then
-            echo "✅ AUTHORIZED: Direct push by @MarioH88"
+            echo "🚀 AUTO-DEPLOY: Direct push by @MarioH88"
           else
-            echo "✅ APPROVED: PR approved by @MarioH88"
+            echo "✅ APPROVED DEPLOY: PR approved by @MarioH88"
           fi
           echo "Deploying to production..."
 
