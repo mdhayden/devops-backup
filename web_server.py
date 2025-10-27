@@ -446,7 +446,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 </div>
                 
                 <div style="background: linear-gradient(45deg, #FF6B6B, #4ECDC4); padding: 15px; margin: 20px 0; border-radius: 10px; color: white; text-align: center; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-                    🚀 DEMO MESSAGE: Testing automatic deployment setup! 🚀
+                    🚀 TESTING: Auto-deploy after fixing workflows! 🚀
                 </div>
                 
                 <div class="status-banner">
