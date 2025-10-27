@@ -37,7 +37,7 @@ steps:
 
 # Optional: record the deployed image
 images:
-  - 'gcr.io/$PROJECT_ID/devops-backup:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/devops-backup:latest'
 
 options:
   logging: CLOUD_LOGGING_ONLY
