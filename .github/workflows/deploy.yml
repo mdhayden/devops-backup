@@ -1,8 +1,8 @@
-name: Deploy to Cloud Run
+name: Deploy to Cloud Run (Require Mario Approval)
 
 on:
-  push:
-    branches: [ main ]
+  pull_request_review:
+    types: [submitted]
 
 env:
   PROJECT_ID: gen-lang-client-0502058841
@@ -11,6 +11,7 @@ env:
 
 jobs:
   deploy:
+    if: github.event.review.state == 'approved' && github.event.review.user.login == 'MarioH88'
     permissions:
       contents: read
       id-token: write

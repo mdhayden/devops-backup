@@ -1,0 +1,17 @@
+# Global code owners - all changes require approval from MarioH88
+* @MarioH88
+
+# Critical production files require explicit approval
+/web_server.py @MarioH88
+/cloudbuild.yaml @MarioH88
+/Dockerfile @MarioH88
+/docker-compose.yml @MarioH88
+
+# Infrastructure and deployment files
+/.github/ @MarioH88
+/k8s/ @MarioH88
+/terraform/ @MarioH88
+
+# Configuration files
+/requirements.txt @MarioH88
+/pyproject.toml @MarioH88
